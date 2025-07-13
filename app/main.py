@@ -1,3 +1,10 @@
+"""
+main.py
+--------
+Entry point for the MiniVault API using FastAPI.
+Defines endpoints for LLM interaction, configuration, and health checks.
+"""
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from app.models import PromptRequest, GenerateResponse, ConfigRequest
@@ -11,11 +18,13 @@ llm_service = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup
+    """
+    FastAPI lifespan context manager for startup and shutdown events.
+    Initializes and cleans up the global LLM service instance.
+    """
     global llm_service
     llm_service = LLMService()
     yield
-    # Shutdown
     if llm_service:
         llm_service.cleanup()
 
@@ -36,6 +45,9 @@ app.add_middleware(
 
 @app.get("/")
 async def root():
+    """
+    Root endpoint providing API info and available features.
+    """
     return {
         "message": "Welcome to MiniVault API",
         "version": "2.0.0",
@@ -52,14 +64,26 @@ async def root():
 
 @app.get("/health")
 async def health_check():
+    """
+    Health check endpoint.
+    Returns API status and LLM loaded state.
+    """
     return {
         "status": "healthy",
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(datetime.UTC).isoformat(),
         "llm_loaded": llm_service.is_loaded if llm_service else False
     }
 
 @app.post("/generate", response_model=GenerateResponse)
 async def generate(request: PromptRequest) -> GenerateResponse:
+    """
+    Generate a response from the LLM based on the provided prompt.
+    Falls back to a stubbed response if LLM is not loaded.
+    Args:
+        request (PromptRequest): The prompt request payload.
+    Returns:
+        GenerateResponse: The generated response object.
+    """
     try:
         # Try to use local LLM first, fallback to stubbed response
         if llm_service and llm_service.is_loaded:
@@ -67,7 +91,7 @@ async def generate(request: PromptRequest) -> GenerateResponse:
         else:
             response_text = generate_stubbed_response(request.prompt)
             response_text += " (Note: Using stubbed response - LLM not loaded)"
-        
+
         log_interaction(request.prompt, response_text)
         return GenerateResponse(response=response_text)
     except Exception as e:
@@ -78,14 +102,11 @@ async def generate(request: PromptRequest) -> GenerateResponse:
 @app.post("/config")
 async def configure_llm(request: ConfigRequest):
     """
-    Configure LLM settings like temperature, max_length, etc.
-    Example payload:
-    {
-        "config": {
-            "temperature": 0.7,
-            "max_length": 256,
-        }
-    }
+    Configure LLM settings such as temperature, max_length, etc.
+    Args:
+        request (ConfigRequest): Configuration parameters for the LLM.
+    Returns:
+        dict: Status and message about configuration update.
     """
     try:
         if llm_service:
@@ -109,5 +130,6 @@ async def configure_llm(request: ConfigRequest):
         raise HTTPException(status_code=500, detail=f"Configuration error: {str(e)}")
 
 if __name__ == "__main__":
+    # Run the FastAPI app using Uvicorn for local development
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
