@@ -1,8 +1,8 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from models import PromptRequest, GenerateResponse, ConfigRequest
-from services import LLMService, generate_stubbed_response
-from utils import log_interaction
+from app.models import PromptRequest, GenerateResponse, ConfigRequest
+from app.services import LLMService, generate_stubbed_response
+from app.utils import log_interaction
 from datetime import datetime
 from contextlib import asynccontextmanager
 
@@ -77,13 +77,34 @@ async def generate(request: PromptRequest) -> GenerateResponse:
 
 @app.post("/config")
 async def configure_llm(request: ConfigRequest):
-    """Configure LLM settings like temperature, max_length, etc."""
+    """
+    Configure LLM settings like temperature, max_length, etc.
+    Example payload:
+    {
+        "config": {
+            "temperature": 0.7,
+            "max_length": 256,
+        }
+    }
+    """
     try:
         if llm_service:
             llm_service.update_config(request.config)
-            return {"status": "success", "message": "Configuration updated"}
+            return {
+                "status": "success",
+                "message": "Configuration updated",
+                "example": {
+                    "config": {
+                        "temperature": "float (e.g. 0.7)",
+                        "max_length": "int (e.g. 256)",
+                    }
+                }
+            }
         else:
-            return {"status": "error", "message": "LLM service not available"}
+            return {
+                "status": "error",
+                "message": "LLM service not available"
+            }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Configuration error: {str(e)}")
 

@@ -63,12 +63,12 @@ minivault-api/
 
 1. **Start the server**:
    ```bash
-   python app.py
+   python -m app.main
    ```
    
    Or alternatively:
    ```bash
-   uvicorn app:app --host 0.0.0.0 --port 8000 --reload
+   uvicorn app.main:app
    ```
 
 2. **Verify the server is running**:
@@ -89,11 +89,17 @@ Returns basic API information and available endpoints.
 **Response:**
 ```json
 {
-  "message": "Welcome to MiniVault API",
-  "version": "1.0.0",
-  "endpoints": {
-    "generate": "POST /generate - Generate a response from a prompt"
-  }
+    "message": "Welcome to MiniVault API",
+    "version": "2.0.0",
+    "features": {
+        "local_llm": true,
+        "model": "Qwen/Qwen2-0.5B-Instruct"
+    },
+    "endpoints": {
+        "generate": "POST /generate - Generate a response from a prompt",
+        "config": "POST /config - Configure LLM settings",
+        "health": "GET /health - Health check"
+    }
 }
 ```
 
@@ -103,8 +109,9 @@ Health check endpoint for monitoring API status.
 **Response:**
 ```json
 {
-  "status": "healthy",
-  "timestamp": "2024-01-15T10:30:00.000000"
+    "status": "healthy",
+    "timestamp": "2025-07-13T15:35:32.966272",
+    "llm_loaded": true
 }
 ```
 
@@ -121,11 +128,15 @@ Main endpoint for generating responses from prompts.
 **Response:**
 ```json
 {
-  "response": "Hello! I'm MiniVault, a simulated AI assistant. How can I help you today?"
+  "response": "I'm AI Assistance, I'm here to help you with any questions or concerns you might have. How can I assist you today?"
 }
 ```
 
 ### Testing the API
+
+## API Testing
+Import `postman/minivault-api.postman_collection.json` into Postman to test the API. \
+Postman collection: [postman/minivault-api.postman_collection.json](postman/minivault-api.postman_collection.json)
 
 #### Using curl
 
@@ -176,7 +187,7 @@ All prompt-response interactions are automatically logged to `logs/log.jsonl`. E
 
 Example log entry:
 ```json
-{"timestamp": "2024-01-15T10:30:00.000000", "prompt": "Hello", "response": "Hello! I'm MiniVault, a simulated AI assistant. How can I help you today?"}
+{"timestamp": "2025-07-13T15:43:15.793704", "prompt": "Hello, how are you?", "response": "I'm here to help! How can I assist you today?\n\nIs there something specific you would like to know or discuss about?", "response_length": 122}
 ```
 
 ## Implementation Notes
