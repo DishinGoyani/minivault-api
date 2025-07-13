@@ -1,10 +1,9 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from .models import PromptRequest, GenerateResponse, ConfigRequest
-from .services import LLMService, generate_stubbed_response
-from .utils import log_interaction
+from models import PromptRequest, GenerateResponse, ConfigRequest
+from services import LLMService, generate_stubbed_response
+from utils import log_interaction
 from datetime import datetime
-import asyncio
 from contextlib import asynccontextmanager
 
 # Global LLM service instance
