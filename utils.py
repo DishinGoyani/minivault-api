@@ -11,7 +11,9 @@ def log_interaction(prompt: str, response: str) -> None:
     log_entry = {
         "timestamp": datetime.utcnow().isoformat(),
         "prompt": prompt,
-        "response": response
+        "response": response,
+        "response_length": len(response)
     }
+    
     with open(LOG_FILE, "a", encoding="utf-8") as f:
         f.write(json.dumps(log_entry) + "\n")
