@@ -10,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.models import PromptRequest, GenerateResponse, ConfigRequest
 from app.services import LLMService, generate_stubbed_response
 from app.utils import log_interaction
-from datetime import datetime
+from datetime import datetime, timezone
 from contextlib import asynccontextmanager
 
 # Global LLM service instance
@@ -70,7 +70,7 @@ async def health_check():
     """
     return {
         "status": "healthy",
-        "timestamp": datetime.now(datetime.UTC).isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "llm_loaded": llm_service.is_loaded if llm_service else False
     }
 
